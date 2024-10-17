@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.50",
   "scripts": {
-    "build": "echo \"Donut1140\"",
+    "build": "bun run --watch src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-    "start": "bun install && npm install prisma typescript ts-node @types/node --save-dev && npx prisma generate && bun run --watch src/index.ts"
+    "start": "bun install && npm install prisma typescript ts-node @types/node --save-dev && npx prisma generate"
   },
   "dependencies": {
     "@elysiajs/cors": "^0.6.0",
