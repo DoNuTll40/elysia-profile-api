@@ -34,6 +34,7 @@ model Image {
   information Information @relation(fields: [infor_id], references: [id])
   infor_id    String      @db.ObjectId
   url         String
+  publicId    String
   type        ImageType   @relation(fields: [type_id], references: [id])
   type_id     String      @db.ObjectId
   status      Int         @default(1)
