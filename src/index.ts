@@ -63,9 +63,18 @@ app.group("/profile", (app) =>
       }
     )
     .post("/upload", async ({ set, body: { image } }) => {
-      
+
         const response: any = await uploadImages(set, image);
 
+        if(response.status === "Error"){
+          set.status = 400;
+          return {
+            code: 400,
+            status: "Error",
+            message: response.message
+          }
+        }
+        
         if (!response) {
           set.status = 500;
           return {
