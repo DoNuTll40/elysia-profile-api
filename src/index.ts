@@ -4,8 +4,8 @@ import { Elysia, t } from "elysia";
 import { createInfor, getInfor } from "./model";
 import { uploadImages } from "./middlewares/uploadImages";
 
-
 import { cloudUpload } from "./utils/cloudupload";
+import { cloudImgDelete } from "./utils/cloudImgDelete";
 
 const app = new Elysia();
 app.use(cors());
@@ -62,19 +62,20 @@ app.group("/profile", (app) =>
         }),
       }
     )
-    .post("/upload", async ({ set, body: { image } }) => {
-
+    .post(
+      "/upload",
+      async ({ set, body: { image } }) => {
         const response: any = await uploadImages(set, image);
 
-        if(response.status === "Error"){
+        if (response.status === "Error") {
           set.status = 400;
           return {
             code: 400,
             status: "Error",
-            message: response.message
-          }
+            message: response.message,
+          };
         }
-        
+
         if (!response) {
           set.status = 500;
           return {
@@ -86,14 +87,12 @@ app.group("/profile", (app) =>
         const images = [];
 
         for (const imagePath of response) {
-
-          const upcloud: any = await cloudUpload(imagePath)
+          const upcloud: any = await cloudUpload(imagePath);
 
           images.push({
-              public_id: upcloud.public_id,
-              cloudinaryUrl: upcloud.secure_url,
-          })
-
+            public_id: upcloud.public_id,
+            cloudinaryUrl: upcloud.secure_url,
+          });
         }
 
         return {
@@ -104,6 +103,55 @@ app.group("/profile", (app) =>
       {
         body: t.Object({
           image: t.Files(),
+        }),
+      }
+    )
+    .delete("/delete", async ({ set, body: { public_id } }) => {
+
+        const files = Array.isArray(public_id)
+          ? public_id
+          : public_id.split(",").map((id) => id.trim());
+
+        if (!public_id || files.length === 0 || files.includes("")) {
+          set.status = 400;
+          return {
+            code: "400",
+            status: "Error",
+            message: "Error: invalid value",
+          };
+        }
+
+        const results = [];
+
+        for (const fileId of files) {
+          try {
+
+            const deleteImage = await cloudImgDelete(fileId)
+            results.push({
+              public_id: `${fileId}`,
+              result: deleteImage.result
+            });
+
+          } catch (error) {
+            set.status = 500;
+            return {
+              code: "500",
+              status: "Error",
+              message: `Failed to delete file: ${fileId}`,
+            };
+          }
+        }
+
+        return {
+          code: 200,
+          status: "Process success",
+          process: results,
+        };
+
+      },
+      {
+        body: t.Object({
+          public_id: t.String(),
         }),
       }
     )
